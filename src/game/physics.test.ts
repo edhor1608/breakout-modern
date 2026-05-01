@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  curveVelocityWithSpin,
+  deflectVelocityWithSpin,
   circlePaddleBounceSurfaceCollision,
   circleRectCollision,
+  decaySpin,
   deepestCircleRectCollision,
   normalizeVelocity,
   paddleBounceSurfaceY,
+  paddleHitSpin,
   velocityFromAngle
 } from "./physics";
 
@@ -58,5 +62,29 @@ describe("physics helpers", () => {
     const paddle = { x: 100, y: 100, width: 130, height: 25 };
 
     expect(circlePaddleBounceSurfaceCollision({ x: 100, y: 125.4, radius: 13 }, paddle, "top", 56)).toBeDefined();
+  });
+
+  it("adds spin from paddle movement and hit position", () => {
+    const spin = paddleHitSpin(700, 700, 0.5, {
+      maxSpin: 18,
+      paddleSpinTransfer: 9,
+      edgeSpinTransfer: 4
+    });
+
+    expect(spin).toBe(11);
+  });
+
+  it("curves flight and wall deflections with positive spin", () => {
+    const curved = curveVelocityWithSpin({ vx: 0, vy: -320 }, 18, 1, 0.025, 320);
+    const bounced = deflectVelocityWithSpin({ vx: 0, vy: 320 }, 18, 0.045, 320);
+
+    expect(curved.vx).toBeGreaterThan(0);
+    expect(Math.hypot(curved.vx, curved.vy)).toBeCloseTo(320);
+    expect(bounced.vx).toBeLessThan(0);
+    expect(Math.hypot(bounced.vx, bounced.vy)).toBeCloseTo(320);
+  });
+
+  it("decays spin over time", () => {
+    expect(decaySpin(10, 1, 0.35)).toBeLessThan(10);
   });
 });

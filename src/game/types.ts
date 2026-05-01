@@ -10,6 +10,7 @@ export type Rect = {
 export type Paddle = Rect & {
   visual: Graphics;
   speed: number;
+  velocityX: number;
   kind: "bottom" | "top";
 };
 
@@ -20,6 +21,7 @@ export type Ball = {
   vx: number;
   vy: number;
   speed: number;
+  angularVelocity: number;
   sprite: Sprite;
   attached: boolean;
 };

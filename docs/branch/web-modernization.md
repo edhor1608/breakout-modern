@@ -24,6 +24,8 @@ Use TypeScript, Vite, and PixiJS for the modern implementation. Keep the legacy 
 
 The paddle visual and contact height are generated from the bounce-angle curve used during play. This makes the stick easier to read: left hits send the ball left, center hits go upward, and right hits send the ball right. It also means edge hits happen on the lower visible curve rather than on an invisible flat line.
 
+Spin physics is available as an opt-in modern setting. It defaults off to preserve the stable legacy-style behavior, but when enabled the moving stick can add ball rotation that bends flight and affects later wall or block bounces.
+
 ## Next Steps
 
 Create the Vite/PixiJS app beside the legacy source with the fewest moving parts. Start with pure TypeScript modules for map parsing, score sorting, and game constants so compatibility tests can run before rendering work begins. Then wire PixiJS rendering and input around those tested modules.

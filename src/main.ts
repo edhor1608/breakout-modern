@@ -30,6 +30,7 @@ root.innerHTML = `
       <div class="controls">
         <button id="pause-button" type="button">Pause</button>
         <button id="sound-button" type="button">Sound on</button>
+        <button id="spin-button" type="button">Spin off</button>
         <button id="menu-button" type="button">Menu</button>
       </div>
     </aside>
@@ -43,11 +44,13 @@ const hudTime = element<HTMLElement>("hud-time");
 const hudBlocks = element<HTMLElement>("hud-blocks");
 const pauseButton = element<HTMLButtonElement>("pause-button");
 const soundButton = element<HTMLButtonElement>("sound-button");
+const spinButton = element<HTMLButtonElement>("spin-button");
 const menuButton = element<HTMLButtonElement>("menu-button");
 
 let currentScreen: Screen = "menu";
 let selectedMode: GameMode = "single";
 let selectedMap = "level1.map";
+let spinEnabled = false;
 let pendingResult: GameResult | undefined;
 
 const game = new BreakoutGame({
@@ -77,6 +80,12 @@ pauseButton.addEventListener("click", () => {
 
 soundButton.addEventListener("click", () => {
   soundButton.textContent = game.toggleSound() ? "Sound on" : "Sound off";
+});
+
+spinButton.addEventListener("click", () => {
+  spinEnabled = !spinEnabled;
+  game.setSpinEnabled(spinEnabled);
+  updateSpinButton();
 });
 
 menuButton.addEventListener("click", showMenu);
@@ -119,6 +128,10 @@ function showMenu(): void {
           ${MAPS.map((map) => `<option value="${map}">${map}</option>`).join("")}
         </select>
       </label>
+      <label class="check-row">
+        Spin physics
+        <input id="spin-checkbox" type="checkbox" />
+      </label>
       <div class="button-row">
         <button id="start-button" type="button">Start</button>
         <button id="highscores-button" type="button">Highscores</button>
@@ -130,13 +143,20 @@ function showMenu(): void {
 
   const modeSelect = element<HTMLSelectElement>("mode-select");
   const mapSelect = element<HTMLSelectElement>("map-select");
+  const spinCheckbox = element<HTMLInputElement>("spin-checkbox");
   modeSelect.value = selectedMode;
   mapSelect.value = selectedMap;
+  spinCheckbox.checked = spinEnabled;
   modeSelect.addEventListener("change", () => {
     selectedMode = modeSelect.value as GameMode;
   });
   mapSelect.addEventListener("change", () => {
     selectedMap = mapSelect.value;
+  });
+  spinCheckbox.addEventListener("change", () => {
+    spinEnabled = spinCheckbox.checked;
+    game.setSpinEnabled(spinEnabled);
+    updateSpinButton();
   });
   element("start-button").addEventListener("click", () => void startGame());
   element("highscores-button").addEventListener("click", showHighscores);
@@ -147,6 +167,7 @@ function showMenu(): void {
 async function startGame(): Promise<void> {
   currentScreen = "playing";
   hideOverlay();
+  game.setSpinEnabled(spinEnabled);
   await game.start(selectedMode, selectedMap);
   game.setPaused(false);
 }
@@ -291,6 +312,10 @@ function element<T extends HTMLElement = HTMLElement>(id: string): T {
     throw new Error(`Missing element #${id}.`);
   }
   return found as T;
+}
+
+function updateSpinButton(): void {
+  spinButton.textContent = spinEnabled ? "Spin on" : "Spin off";
 }
 
 void pendingResult;

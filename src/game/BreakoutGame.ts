@@ -6,9 +6,13 @@ import {
   clamp,
   circlePaddleBounceSurfaceCollision,
   createPaddleBounceSurface,
+  curveVelocityWithSpin,
+  decaySpin,
+  deflectVelocityWithSpin,
   deepestCircleRectCollision,
   normalizeVelocity,
   paddleBounceSurfaceY,
+  paddleHitSpin,
   rectsOverlap,
   velocityFromAngle
 } from "./physics";
@@ -37,6 +41,7 @@ export class BreakoutGame {
   private elapsed = 0;
   private destroyedBlocks = 0;
   private totalBlocks = 0;
+  private spinEnabled = false;
   private itemChance: number = GAME.itemChance;
   private bottom!: Paddle;
   private top?: Paddle;
@@ -89,6 +94,14 @@ export class BreakoutGame {
 
   setPaused(paused: boolean): void {
     this.paused = paused;
+  }
+
+  setSpinEnabled(enabled: boolean): void {
+    this.spinEnabled = enabled;
+    if (!enabled && this.ball) {
+      this.ball.angularVelocity = 0;
+      this.ball.sprite.rotation = 0;
+    }
   }
 
   toggleSound(): boolean {
@@ -159,6 +172,7 @@ export class BreakoutGame {
       height: texture.height,
       visual,
       speed: GAME.stickSpeed,
+      velocityX: 0,
       kind
     };
   }
@@ -204,6 +218,7 @@ export class BreakoutGame {
       vx: 0,
       vy: 0,
       speed: GAME.initialBallSpeed,
+      angularVelocity: 0,
       sprite,
       attached: true
     };
@@ -280,9 +295,11 @@ export class BreakoutGame {
   }
 
   private movePaddle(paddle: Paddle, deltaSeconds: number, leftKey: string, rightKey: string): void {
+    const previousX = paddle.x;
     const direction = Number(this.input.pressed(rightKey)) - Number(this.input.pressed(leftKey));
     paddle.x += direction * paddle.speed * deltaSeconds;
     paddle.x = clamp(paddle.x, paddle.width / 2 + GAME.sidePadding, GAME.width - paddle.width / 2 - GAME.sidePadding);
+    paddle.velocityX = deltaSeconds > 0 ? (paddle.x - previousX) / deltaSeconds : 0;
   }
 
   private launchBall(): void {
@@ -297,25 +314,31 @@ export class BreakoutGame {
     this.ball.y = this.bottom.y - 26;
     this.ball.vx = 0;
     this.ball.vy = 0;
+    this.ball.angularVelocity = 0;
+    this.ball.sprite.rotation = 0;
   }
 
   private moveBall(deltaSeconds: number): void {
+    this.applySpinFlight(deltaSeconds);
     this.ball.x += this.ball.vx * deltaSeconds;
     this.ball.y += this.ball.vy * deltaSeconds;
 
     if (this.ball.x - this.ball.radius <= 0) {
       this.ball.x = this.ball.radius;
       this.ball.vx = Math.abs(this.ball.vx);
+      this.applySpinBounce();
       this.sound.play("border");
     } else if (this.ball.x + this.ball.radius >= GAME.width) {
       this.ball.x = GAME.width - this.ball.radius;
       this.ball.vx = -Math.abs(this.ball.vx);
+      this.applySpinBounce();
       this.sound.play("border");
     }
 
     if (this.ball.y - this.ball.radius <= GAME.topWallY) {
       this.ball.y = GAME.topWallY + this.ball.radius;
       this.ball.vy = Math.abs(this.ball.vy);
+      this.applySpinBounce();
       this.sound.play("border");
     }
 
@@ -346,6 +369,7 @@ export class BreakoutGame {
 
     const angle = hit.normalized * GAME.maxBounceAngle;
     this.setBallAngle(paddle.kind === "bottom" ? angle : 180 - angle);
+    this.applyPaddleSpin(paddle, hit.normalized);
     this.ball.y =
       paddle.kind === "bottom" ? paddle.y + hit.surfaceY - this.ball.radius : paddle.y - hit.surfaceY + this.ball.radius;
     this.raiseBallSpeed();
@@ -368,6 +392,7 @@ export class BreakoutGame {
       this.ball.y += pushDirection * collision.overlapY;
       this.ball.vy *= -1;
     }
+    this.applySpinBounce();
 
     block.hits -= 1;
     this.raiseBallSpeed();
@@ -496,6 +521,48 @@ export class BreakoutGame {
     const velocity = normalizeVelocity(this.ball, this.ball.speed);
     this.ball.vx = velocity.vx;
     this.ball.vy = velocity.vy;
+  }
+
+  private applyPaddleSpin(paddle: Paddle, hitNormalized: number): void {
+    if (!this.spinEnabled) {
+      return;
+    }
+
+    this.ball.angularVelocity = paddleHitSpin(paddle.velocityX, GAME.maxStickSpeed, hitNormalized, GAME);
+  }
+
+  private applySpinFlight(deltaSeconds: number): void {
+    if (!this.spinEnabled || this.ball.angularVelocity === 0) {
+      return;
+    }
+
+    const velocity = curveVelocityWithSpin(
+      this.ball,
+      this.ball.angularVelocity,
+      deltaSeconds,
+      GAME.spinFlightCurve,
+      this.ball.speed
+    );
+    this.ball.vx = velocity.vx;
+    this.ball.vy = velocity.vy;
+    this.ball.sprite.rotation += this.ball.angularVelocity * deltaSeconds;
+    this.ball.angularVelocity = decaySpin(this.ball.angularVelocity, deltaSeconds, GAME.spinDamping);
+  }
+
+  private applySpinBounce(): void {
+    if (!this.spinEnabled || this.ball.angularVelocity === 0) {
+      return;
+    }
+
+    const velocity = deflectVelocityWithSpin(
+      this.ball,
+      this.ball.angularVelocity,
+      GAME.spinBounceDeflection,
+      this.ball.speed
+    );
+    this.ball.vx = velocity.vx;
+    this.ball.vy = velocity.vy;
+    this.ball.angularVelocity *= GAME.spinBounceDamping;
   }
 
   private syncSprites(): void {

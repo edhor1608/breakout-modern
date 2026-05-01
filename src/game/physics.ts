@@ -29,6 +29,12 @@ export type PaddleSurfaceCollision = {
   surfaceY: number;
 };
 
+export type SpinSettings = {
+  maxSpin: number;
+  paddleSpinTransfer: number;
+  edgeSpinTransfer: number;
+};
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -51,6 +57,49 @@ export function normalizeVelocity(velocity: Velocity, speed: number): Velocity {
     vx: (velocity.vx / length) * speed,
     vy: (velocity.vy / length) * speed
   };
+}
+
+export function rotateVelocity(velocity: Velocity, radians: number): Velocity {
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  return {
+    vx: velocity.vx * cos - velocity.vy * sin,
+    vy: velocity.vx * sin + velocity.vy * cos
+  };
+}
+
+export function curveVelocityWithSpin(
+  velocity: Velocity,
+  angularVelocity: number,
+  deltaSeconds: number,
+  strength: number,
+  speed: number
+): Velocity {
+  return normalizeVelocity(rotateVelocity(velocity, angularVelocity * strength * deltaSeconds), speed);
+}
+
+export function deflectVelocityWithSpin(
+  velocity: Velocity,
+  angularVelocity: number,
+  strength: number,
+  speed: number
+): Velocity {
+  return normalizeVelocity(rotateVelocity(velocity, angularVelocity * strength), speed);
+}
+
+export function decaySpin(angularVelocity: number, deltaSeconds: number, damping: number): number {
+  return angularVelocity * Math.exp(-damping * deltaSeconds);
+}
+
+export function paddleHitSpin(
+  paddleVelocityX: number,
+  maxPaddleVelocityX: number,
+  hitNormalized: number,
+  settings: SpinSettings
+): number {
+  const movementSpin = clamp(paddleVelocityX / maxPaddleVelocityX, -1, 1) * settings.paddleSpinTransfer;
+  const edgeSpin = hitNormalized * settings.edgeSpinTransfer;
+  return clamp(movementSpin + edgeSpin, -settings.maxSpin, settings.maxSpin);
 }
 
 export function circleRectCollision(circle: Circle, rect: Rect): CircleRectCollision | undefined {

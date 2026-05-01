@@ -36,6 +36,8 @@ The initial ball speed is `0.3` in legacy movement units. The ball speed increas
 
 The ball starts attached to the stick before space is pressed. While attached, left and right movement also moves the ball. Losing a ball subtracts one life, resets the stick and ball, and pauses the timer until play resumes.
 
+Spin physics is an optional modern setting and defaults off. With spin disabled, the game should preserve the deterministic legacy-style bounce behavior. With spin enabled, stick movement and hit position add ball rotation, and that rotation can curve flight and deflect later wall or block bounces.
+
 ## Blocks And Items
 
 Blocks lose one hit on each valid ball collision. Blocks with no hits left are removed. Destroying all blocks wins the game.

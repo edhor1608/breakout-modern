@@ -75,3 +75,21 @@ This keeps the player-facing model coherent: the visible curve explains both whe
 ### Consequences
 
 Paddle edge hits occur slightly later than they did with the flat contact gate because the visible surface is lower at the edges. This is an intentional physics adjustment to align contact with the visual shape.
+
+## ADR 0005: Add Optional Arcade Spin Physics
+
+### Context
+
+The current paddle model gives direct angle control from hit position. A richer modern option can let paddle movement and ball rotation influence later flight and bounces, but enabling that by default would alter the stable legacy-style feel.
+
+### Decision
+
+Add spin physics behind a setting that defaults off. When enabled, paddle movement and hit position set ball angular velocity. During flight, spin subtly rotates the velocity vector while preserving ball speed. Wall and block bounces reflect normally first, then current spin deflects the outgoing vector and decays.
+
+### Rationale
+
+This introduces skill expression without forcing it onto existing play. Keeping it as an opt-in setting preserves compatibility, while implementing the math in pure physics helpers keeps the behavior testable and tunable.
+
+### Consequences
+
+Spin mode is intentionally arcade-style rather than a full rigid-body simulation. It changes gameplay when enabled, so scores from spin and non-spin play may not be directly comparable.

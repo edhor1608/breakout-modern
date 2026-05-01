@@ -43,6 +43,7 @@ button {
   background: rgba(210, 54, 40, 0.9);
   padding: 0 16px;
   cursor: pointer;
+  white-space: nowrap;
   transition:
     transform 140ms ease,
     background 140ms ease,
@@ -70,6 +71,19 @@ label {
   gap: 8px;
   color: rgba(248, 246, 231, 0.72);
   font-size: 13px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.check-row input {
+  width: 18px;
+  min-width: 18px;
+  min-height: 18px;
 }
 
 .shell {
@@ -252,7 +266,8 @@ dd {
 }
 
 .controls button {
-  flex: 1 1 96px;
+  flex: 1 1 84px;
+  padding-inline: 12px;
 }
 
 .button-row button {
