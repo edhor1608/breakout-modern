@@ -22,7 +22,7 @@ The original highscore files are Java object serialization and are not directly 
 
 Use TypeScript, Vite, and PixiJS for the modern implementation. Keep the legacy code as a reference during the port. Preserve map and asset compatibility first; replace Java highscore persistence with a browser-native format while documenting import/export limitations.
 
-The paddle visual is generated from the bounce-angle curve used during play. This keeps the current physics intact while making the stick easier to read: left hits send the ball left, center hits go upward, and right hits send the ball right.
+The paddle visual and contact height are generated from the bounce-angle curve used during play. This makes the stick easier to read: left hits send the ball left, center hits go upward, and right hits send the ball right. It also means edge hits happen on the lower visible curve rather than on an invisible flat line.
 
 ## Next Steps
 

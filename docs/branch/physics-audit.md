@@ -8,7 +8,7 @@ The canvas may scale visually in CSS, but gameplay calculations stay in logical 
 
 ## Current Gameplay Model
 
-The ball is arcade-style rather than physically realistic. It uses constant-speed vectors, axis-aligned wall and rectangle collisions, rounded capsule paddle collisions, and paddle-controlled bounce angles. The lower paddle maps hit position from left edge to right edge into `-maxBounceAngle` to `+maxBounceAngle`; the upper paddle mirrors that angle downward.
+The ball is arcade-style rather than physically realistic. It uses constant-speed vectors, axis-aligned wall and rectangle collisions, curved bounce-surface paddle collisions, and paddle-controlled bounce angles. The lower paddle maps hit position from left edge to right edge into `-maxBounceAngle` to `+maxBounceAngle`; the upper paddle mirrors that angle downward.
 
 Block collisions use circle-vs-rectangle intersection. When multiple adjacent blocks collide at once, the deepest collision is chosen to avoid row-order artifacts. The ball is pushed out of the block along the resolved collision axis before velocity is reflected, which prevents sticky repeated damage.
 
@@ -16,11 +16,13 @@ Physics is stepped in small substeps and frame deltas are capped. This avoids la
 
 ## Paddle Bounce Surface Calculation
 
-The paddle contact check is a capsule, but the player-facing behavior is the bounce-angle function. On paddle hit, the incoming angle is ignored and horizontal hit position maps directly to an outgoing angle from `-maxBounceAngle` to `+maxBounceAngle`.
+The paddle behavior is driven by the bounce-angle function. On paddle hit, the incoming angle is ignored and horizontal hit position maps directly to an outgoing angle from `-maxBounceAngle` to `+maxBounceAngle`.
 
 The rendered paddle therefore uses a curved deflector surface derived from that angle function. If a vertical incoming ball were reflected by a real curve, the local surface normal would be half the outgoing angle, so `dy/dx = tan(outgoingAngle / 2)`. With `outgoingAngle = maxBounceAngle * x / (width / 2)`, the visual curve is `y = centerTop - (width / maxAngle) * ln(cos(maxAngle * x / width))`.
 
-With the current 56 degree maximum bounce, the normal 130 by 25 paddle drops about 16.56 pixels from center to edge. The bigger 193 by 25 paddle drops about 24.58 pixels, and the smaller 93 by 25 paddle drops about 11.85 pixels. This changes only the visual stick shape; the current bounce logic and contact gate stay unchanged.
+With the current 56 degree maximum bounce, the normal 130 by 25 paddle drops about 16.56 pixels from center to edge. The bigger 193 by 25 paddle drops about 24.58 pixels, and the smaller 93 by 25 paddle drops about 11.85 pixels.
+
+The rendered stick and paddle contact now use the same curve. The outgoing-angle rule is unchanged, but the hit height is no longer flat: at the edges the ball must reach the lower visible surface before the paddle hit triggers.
 
 ## Fixed During Audit
 

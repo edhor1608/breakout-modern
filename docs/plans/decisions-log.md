@@ -40,6 +40,8 @@ The paddle no longer displays the original stick bitmap directly. The original i
 
 ## ADR 0003: Render The Paddle As A Bounce-Angle Surface
 
+Status: Amended by ADR 0004.
+
 ### Context
 
 The paddle contact gate uses a capsule, but the gameplay feel does not behave like a rectangular wall or a simple rounded collider. When the ball hits the paddle, the incoming angle is ignored and horizontal hit position chooses the outgoing angle. The previous visual still made the stick read mostly like a rounded brick.
@@ -55,3 +57,21 @@ This matches what players need to understand during play: landing on the left si
 ### Consequences
 
 The paddle visual now represents the control law rather than the contact capsule. This is intentionally player-facing: the collision gate remains unchanged, but the stick shape explains the bounce behavior more honestly.
+
+## ADR 0004: Use The Bounce Surface For Paddle Contact Height
+
+### Context
+
+Rendering the paddle as a bounce-angle curve fixed the direction affordance, but it created a new mismatch. The visible surface dropped lower near the edges while collision still used the older flat or capsule gate, so edge hits could trigger before the ball visually reached the stick.
+
+### Decision
+
+Use the same bounce surface curve for paddle contact. The ball now collides against the rendered curve, and post-hit separation places the ball on that local surface height. The outgoing angle formula remains unchanged.
+
+### Rationale
+
+This keeps the player-facing model coherent: the visible curve explains both where the ball touches and where it will go. It also keeps the implementation simple by making the curve formula a shared physics helper used by rendering and collision.
+
+### Consequences
+
+Paddle edge hits occur slightly later than they did with the flat contact gate because the visible surface is lower at the edges. This is an intentional physics adjustment to align contact with the visual shape.

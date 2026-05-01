@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  circleCapsuleCollision,
+  circlePaddleBounceSurfaceCollision,
   circleRectCollision,
   deepestCircleRectCollision,
   normalizeVelocity,
+  paddleBounceSurfaceY,
   velocityFromAngle
 } from "./physics";
 
@@ -41,17 +42,21 @@ describe("physics helpers", () => {
     expect(hit?.rect.x).toBe(25);
   });
 
-  it("does not collide with invisible paddle rectangle corners", () => {
-    const paddle = { x: 100, y: 100, width: 130, height: 25 };
-    const ball = { x: 36, y: 85, radius: 5 };
-
-    expect(circleRectCollision(ball, paddle)).toBeDefined();
-    expect(circleCapsuleCollision(ball, paddle)).toBe(false);
+  it("derives the paddle surface from the bounce angle", () => {
+    expect(paddleBounceSurfaceY(0, 130, 25, 56)).toBeCloseTo(-12.5);
+    expect(paddleBounceSurfaceY(65, 130, 25, 56)).toBeCloseTo(4.058, 3);
   });
 
-  it("does collide with rounded paddle caps", () => {
+  it("uses the curved paddle surface as the contact height", () => {
     const paddle = { x: 100, y: 100, width: 130, height: 25 };
 
-    expect(circleCapsuleCollision({ x: 38, y: 100, radius: 10 }, paddle)).toBe(true);
+    expect(circlePaddleBounceSurfaceCollision({ x: 165, y: 80, radius: 13 }, paddle, "bottom", 56)).toBeUndefined();
+    expect(circlePaddleBounceSurfaceCollision({ x: 165, y: 91.2, radius: 13 }, paddle, "bottom", 56)).toBeDefined();
+  });
+
+  it("mirrors the curved paddle surface for the top paddle", () => {
+    const paddle = { x: 100, y: 100, width: 130, height: 25 };
+
+    expect(circlePaddleBounceSurfaceCollision({ x: 100, y: 125.4, radius: 13 }, paddle, "top", 56)).toBeDefined();
   });
 });

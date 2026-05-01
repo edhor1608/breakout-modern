@@ -17,8 +17,16 @@ export type CircleRectCollision = {
   overlapY: number;
 };
 
-export type Capsule = Rect & {
-  radius?: number;
+export type PaddleKind = "bottom" | "top";
+
+export type SurfacePoint = {
+  x: number;
+  y: number;
+};
+
+export type PaddleSurfaceCollision = {
+  normalized: number;
+  surfaceY: number;
 };
 
 export function clamp(value: number, min: number, max: number): number {
@@ -61,13 +69,57 @@ export function circleRectCollision(circle: Circle, rect: Rect): CircleRectColli
   };
 }
 
-export function circleCapsuleCollision(circle: Circle, capsule: Capsule): boolean {
-  const capRadius = capsule.radius ?? capsule.height / 2;
-  const halfSegment = Math.max(0, capsule.width / 2 - capRadius);
-  const closestX = clamp(circle.x, capsule.x - halfSegment, capsule.x + halfSegment);
-  const distance = Math.hypot(circle.x - closestX, circle.y - capsule.y);
+export function paddleBounceSurfaceY(x: number, width: number, height: number, maxAngleDegrees: number): number {
+  const maxAngle = (maxAngleDegrees * Math.PI) / 180;
+  return -height / 2 - (width / maxAngle) * Math.log(Math.cos((maxAngle * x) / width));
+}
 
-  return distance <= circle.radius + capRadius;
+export function createPaddleBounceSurface(
+  width: number,
+  height: number,
+  maxAngleDegrees: number,
+  segments = 24
+): SurfacePoint[] {
+  return Array.from({ length: segments + 1 }, (_, index) => {
+    const x = -width / 2 + (width * index) / segments;
+    return { x, y: paddleBounceSurfaceY(x, width, height, maxAngleDegrees) };
+  });
+}
+
+export function circlePaddleBounceSurfaceCollision(
+  circle: Circle,
+  paddle: Rect,
+  kind: PaddleKind,
+  maxAngleDegrees: number
+): PaddleSurfaceCollision | undefined {
+  const localCircle = {
+    x: circle.x - paddle.x,
+    y: kind === "bottom" ? circle.y - paddle.y : paddle.y - circle.y
+  };
+  const surface = createPaddleBounceSurface(paddle.width, paddle.height, maxAngleDegrees);
+  let closest: PaddleSurfaceCollision & { distance: number } | undefined;
+
+  for (let index = 1; index < surface.length; index += 1) {
+    const start = surface[index - 1];
+    const end = surface[index];
+    const segmentX = end.x - start.x;
+    const segmentY = end.y - start.y;
+    const segmentLengthSquared = segmentX * segmentX + segmentY * segmentY;
+    const t = clamp(
+      ((localCircle.x - start.x) * segmentX + (localCircle.y - start.y) * segmentY) / segmentLengthSquared,
+      0,
+      1
+    );
+    const x = start.x + segmentX * t;
+    const y = start.y + segmentY * t;
+    const distance = Math.hypot(localCircle.x - x, localCircle.y - y);
+
+    if (distance <= circle.radius && (!closest || distance < closest.distance)) {
+      closest = { distance, normalized: clamp(x / (paddle.width / 2), -1, 1), surfaceY: y };
+    }
+  }
+
+  return closest ? { normalized: closest.normalized, surfaceY: closest.surfaceY } : undefined;
 }
 
 export function deepestCircleRectCollision<T extends Rect>(

@@ -4,9 +4,11 @@ import { loadLegacyMap, type ParsedMap } from "../core/map";
 import { InputState } from "./input";
 import {
   clamp,
-  circleCapsuleCollision,
+  circlePaddleBounceSurfaceCollision,
+  createPaddleBounceSurface,
   deepestCircleRectCollision,
   normalizeVelocity,
+  paddleBounceSurfaceY,
   rectsOverlap,
   velocityFromAngle
 } from "./physics";
@@ -162,7 +164,7 @@ export class BreakoutGame {
   }
 
   private createPaddleVisual(x: number, y: number, width: number, height: number, kind: Paddle["kind"]): Graphics {
-    const surface = this.createPaddleBounceSurface(width, height);
+    const surface = createPaddleBounceSurface(width, height, GAME.maxBounceAngle);
     const bottomY = height / 2;
     const visual = new Graphics();
 
@@ -181,7 +183,7 @@ export class BreakoutGame {
     for (const marker of [-0.25, 0, 0.25]) {
       const markerX = marker * width;
       visual
-        .moveTo(markerX, this.paddleBounceSurfaceY(markerX, width, height) + 4)
+        .moveTo(markerX, paddleBounceSurfaceY(markerX, width, height, GAME.maxBounceAngle) + 4)
         .lineTo(markerX, bottomY - 4)
         .stroke({ width: 1, color: 0x2a170c, alpha: 0.65 });
     }
@@ -189,18 +191,6 @@ export class BreakoutGame {
     visual.scale.y = kind === "top" ? -1 : 1;
     visual.position.set(x, y);
     return visual;
-  }
-
-  private createPaddleBounceSurface(width: number, height: number): Array<{ x: number; y: number }> {
-    return Array.from({ length: 25 }, (_, index) => {
-      const x = -width / 2 + (width * index) / 24;
-      return { x, y: this.paddleBounceSurfaceY(x, width, height) };
-    });
-  }
-
-  private paddleBounceSurfaceY(x: number, width: number, height: number): number {
-    const maxAngle = (GAME.maxBounceAngle * Math.PI) / 180;
-    return -height / 2 - (width / maxAngle) * Math.log(Math.cos((maxAngle * x) / width));
   }
 
   private createBall(): Ball {
@@ -342,7 +332,8 @@ export class BreakoutGame {
   }
 
   private hitPaddle(paddle: Paddle): void {
-    if (!circleCapsuleCollision(this.ball, paddle)) {
+    const hit = circlePaddleBounceSurfaceCollision(this.ball, paddle, paddle.kind, GAME.maxBounceAngle);
+    if (!hit) {
       return;
     }
 
@@ -353,10 +344,10 @@ export class BreakoutGame {
       return;
     }
 
-    const normalized = clamp((this.ball.x - paddle.x) / (paddle.width / 2), -1, 1);
-    const angle = normalized * GAME.maxBounceAngle;
+    const angle = hit.normalized * GAME.maxBounceAngle;
     this.setBallAngle(paddle.kind === "bottom" ? angle : 180 - angle);
-    this.ball.y = paddle.kind === "bottom" ? paddle.y - paddle.height / 2 - this.ball.radius : paddle.y + paddle.height / 2 + this.ball.radius;
+    this.ball.y =
+      paddle.kind === "bottom" ? paddle.y + hit.surfaceY - this.ball.radius : paddle.y - hit.surfaceY + this.ball.radius;
     this.raiseBallSpeed();
     this.sound.play("stick");
   }
