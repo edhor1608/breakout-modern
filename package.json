@@ -1,0 +1,26 @@
+{
+  "name": "breakout-modern",
+  "version": "0.1.0",
+  "description": "A web-first TypeScript/PixiJS port of the original FoP Breakout project.",
+  "license": "MIT",
+  "type": "module",
+  "private": false,
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pixi.js": "^8.10.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/bun": "^1.3.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12",
+    "vitest": "^4.0.14"
+  }
+}
