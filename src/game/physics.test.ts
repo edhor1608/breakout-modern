@@ -67,21 +67,21 @@ describe("physics helpers", () => {
   it("adds clockwise spin when the paddle moves left", () => {
     const spin = paddleHitSpin(-700, 700, 0, {
       maxSpin: 18,
-      paddleSpinTransfer: 9,
-      edgeSpinTransfer: 4
+      paddleSpinTransfer: 12,
+      edgeSpinTransfer: 5
     });
 
-    expect(spin).toBe(9);
+    expect(spin).toBe(12);
   });
 
   it("adds counterclockwise spin when the paddle moves right", () => {
     const spin = paddleHitSpin(700, 700, 0, {
       maxSpin: 18,
-      paddleSpinTransfer: 9,
-      edgeSpinTransfer: 4
+      paddleSpinTransfer: 12,
+      edgeSpinTransfer: 5
     });
 
-    expect(spin).toBe(-9);
+    expect(spin).toBe(-12);
   });
 
   it("curves flight and wall deflections with positive spin", () => {
