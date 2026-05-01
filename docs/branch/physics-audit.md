@@ -26,7 +26,7 @@ The rendered stick and paddle contact now use the same curve. The outgoing-angle
 
 ## Optional Spin Model
 
-Spin physics is disabled by default. When enabled, paddle movement and hit position set the ball's angular velocity. Positive spin bends upward travel to the right and negative spin bends it to the left. Flight curvature is intentionally subtle and preserves constant ball speed by rotating and renormalizing the velocity vector.
+Spin physics is disabled by default. When enabled, paddle movement and hit position set the ball's angular velocity. A left-moving paddle adds positive clockwise spin in screen coordinates; a right-moving paddle adds negative counterclockwise spin. Positive spin bends upward travel to the right and negative spin bends it to the left. Flight curvature is intentionally subtle and preserves constant ball speed by rotating and renormalizing the velocity vector.
 
 Wall and block bounces still reflect the appropriate velocity axis first. After reflection, current spin applies a small angular deflection to the outgoing vector and then loses some spin energy. Spin also decays during flight so the effect does not accumulate forever.
 

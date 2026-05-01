@@ -64,14 +64,24 @@ describe("physics helpers", () => {
     expect(circlePaddleBounceSurfaceCollision({ x: 100, y: 125.4, radius: 13 }, paddle, "top", 56)).toBeDefined();
   });
 
-  it("adds spin from paddle movement and hit position", () => {
-    const spin = paddleHitSpin(700, 700, 0.5, {
+  it("adds clockwise spin when the paddle moves left", () => {
+    const spin = paddleHitSpin(-700, 700, 0, {
       maxSpin: 18,
       paddleSpinTransfer: 9,
       edgeSpinTransfer: 4
     });
 
-    expect(spin).toBe(11);
+    expect(spin).toBe(9);
+  });
+
+  it("adds counterclockwise spin when the paddle moves right", () => {
+    const spin = paddleHitSpin(700, 700, 0, {
+      maxSpin: 18,
+      paddleSpinTransfer: 9,
+      edgeSpinTransfer: 4
+    });
+
+    expect(spin).toBe(-9);
   });
 
   it("curves flight and wall deflections with positive spin", () => {

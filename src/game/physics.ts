@@ -97,7 +97,7 @@ export function paddleHitSpin(
   hitNormalized: number,
   settings: SpinSettings
 ): number {
-  const movementSpin = clamp(paddleVelocityX / maxPaddleVelocityX, -1, 1) * settings.paddleSpinTransfer;
+  const movementSpin = -clamp(paddleVelocityX / maxPaddleVelocityX, -1, 1) * settings.paddleSpinTransfer;
   const edgeSpin = hitNormalized * settings.edgeSpinTransfer;
   return clamp(movementSpin + edgeSpin, -settings.maxSpin, settings.maxSpin);
 }
