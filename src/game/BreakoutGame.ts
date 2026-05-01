@@ -1,10 +1,10 @@
-import { Application, Assets, Container, Sprite, Text, Texture } from "pixi.js";
+import { Application, Assets, Container, Graphics, Sprite, Text, Texture } from "pixi.js";
 import { ASSETS, GAME, type GameMode } from "../core/constants";
 import { loadLegacyMap, type ParsedMap } from "../core/map";
 import { InputState } from "./input";
 import {
   clamp,
-  circleRectCollision,
+  circleCapsuleCollision,
   deepestCircleRectCollision,
   normalizeVelocity,
   rectsOverlap,
@@ -150,16 +150,26 @@ export class BreakoutGame {
     const sprite = new Sprite(this.texture(ASSETS.images.stick));
     sprite.anchor.set(0.5);
     sprite.position.set(x, y);
+    const mask = this.createPaddleMask(x, y, sprite.width, sprite.height);
+    sprite.mask = mask;
     this.world.addChild(sprite);
+    this.world.addChild(mask);
     return {
       x,
       y,
       width: sprite.width,
       height: sprite.height,
+      mask,
       speed: GAME.stickSpeed,
       kind,
       sprite
     };
+  }
+
+  private createPaddleMask(x: number, y: number, width: number, height: number): Graphics {
+    const mask = new Graphics().roundRect(-width / 2, -height / 2, width, height, height / 2).fill(0xffffff);
+    mask.position.set(x, y);
+    return mask;
   }
 
   private createBall(): Ball {
@@ -301,7 +311,7 @@ export class BreakoutGame {
   }
 
   private hitPaddle(paddle: Paddle): void {
-    if (!circleRectCollision(this.ball, paddle)) {
+    if (!circleCapsuleCollision(this.ball, paddle)) {
       return;
     }
 
@@ -415,6 +425,12 @@ export class BreakoutGame {
     paddle.sprite.texture = this.texture(texturePath);
     paddle.width = paddle.sprite.width;
     paddle.height = paddle.sprite.height;
+    paddle.sprite.mask = null;
+    this.world.removeChild(paddle.mask);
+    paddle.mask.destroy();
+    paddle.mask = this.createPaddleMask(paddle.x, paddle.y, paddle.width, paddle.height);
+    paddle.sprite.mask = paddle.mask;
+    this.world.addChild(paddle.mask);
     paddle.x = clamp(paddle.x, paddle.width / 2 + GAME.sidePadding, GAME.width - paddle.width / 2 - GAME.sidePadding);
   }
 
@@ -466,6 +482,7 @@ export class BreakoutGame {
     for (const paddle of [this.bottom, this.top]) {
       if (paddle) {
         paddle.sprite.position.set(paddle.x, paddle.y);
+        paddle.mask.position.set(paddle.x, paddle.y);
       }
     }
     this.ball.sprite.position.set(this.ball.x, this.ball.y);

@@ -1,4 +1,4 @@
-import type { Sprite } from "pixi.js";
+import type { Graphics, Sprite } from "pixi.js";
 
 export type Rect = {
   x: number;
@@ -9,6 +9,7 @@ export type Rect = {
 
 export type Paddle = Rect & {
   sprite: Sprite;
+  mask: Graphics;
   speed: number;
   kind: "bottom" | "top";
 };

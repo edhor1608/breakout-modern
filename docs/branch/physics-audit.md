@@ -8,7 +8,7 @@ The canvas may scale visually in CSS, but gameplay calculations stay in logical 
 
 ## Current Gameplay Model
 
-The ball is arcade-style rather than physically realistic. It uses constant-speed vectors, axis-aligned wall and rectangle collisions, and paddle-controlled bounce angles. The lower paddle maps hit position from left edge to right edge into `-maxBounceAngle` to `+maxBounceAngle`; the upper paddle mirrors that angle downward.
+The ball is arcade-style rather than physically realistic. It uses constant-speed vectors, axis-aligned wall and rectangle collisions, rounded capsule paddle collisions, and paddle-controlled bounce angles. The lower paddle maps hit position from left edge to right edge into `-maxBounceAngle` to `+maxBounceAngle`; the upper paddle mirrors that angle downward.
 
 Block collisions use circle-vs-rectangle intersection. When multiple adjacent blocks collide at once, the deepest collision is chosen to avoid row-order artifacts. The ball is pushed out of the block along the resolved collision axis before velocity is reflected, which prevents sticky repeated damage.
 

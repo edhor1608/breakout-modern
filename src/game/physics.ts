@@ -17,6 +17,10 @@ export type CircleRectCollision = {
   overlapY: number;
 };
 
+export type Capsule = Rect & {
+  radius?: number;
+};
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -55,6 +59,15 @@ export function circleRectCollision(circle: Circle, rect: Rect): CircleRectColli
     overlapX,
     overlapY
   };
+}
+
+export function circleCapsuleCollision(circle: Circle, capsule: Capsule): boolean {
+  const capRadius = capsule.radius ?? capsule.height / 2;
+  const halfSegment = Math.max(0, capsule.width / 2 - capRadius);
+  const closestX = clamp(circle.x, capsule.x - halfSegment, capsule.x + halfSegment);
+  const distance = Math.hypot(circle.x - closestX, circle.y - capsule.y);
+
+  return distance <= circle.radius + capRadius;
 }
 
 export function deepestCircleRectCollision<T extends Rect>(
