@@ -26,6 +26,8 @@ The paddle visual and contact height are generated from the bounce-angle curve u
 
 Spin physics is available as an opt-in modern setting. It defaults off to preserve the stable legacy-style behavior, but when enabled the moving stick can add ball rotation that bends flight and affects later wall or block bounces.
 
+The app is deployed on Vercel at https://breakout-modern.vercel.app. The project remains a static Vite build with `bun run build`, so hosting does not add a server runtime or change the browser-only architecture.
+
 ## Next Steps
 
 Create the Vite/PixiJS app beside the legacy source with the fewest moving parts. Start with pure TypeScript modules for map parsing, score sorting, and game constants so compatibility tests can run before rendering work begins. Then wire PixiJS rendering and input around those tested modules.

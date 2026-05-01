@@ -93,3 +93,21 @@ This introduces skill expression without forcing it onto existing play. Keeping 
 ### Consequences
 
 Spin mode is intentionally arcade-style rather than a full rigid-body simulation. It changes gameplay when enabled, so scores from spin and non-spin play may not be directly comparable.
+
+## ADR 0006: Host The Web Port On Vercel
+
+### Context
+
+The port is now playable as a browser app, but it was only available locally. The project should be easy to share without adding a backend or changing the static Vite architecture.
+
+### Decision
+
+Deploy the app to Vercel. Use the Vite defaults: build with `bun run build` and serve the generated `dist/` output. Keep Vercel's local project metadata in `.vercel/` ignored.
+
+### Rationale
+
+Vercel fits the current app because it hosts static frontend builds with minimal configuration and integrates with the existing GitHub repository. It lets the modern port be shared immediately while keeping the project small.
+
+### Consequences
+
+The public deployment is available at https://breakout-modern.vercel.app. Vercel created local `.vercel/` project metadata, which must stay out of git.

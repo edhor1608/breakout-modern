@@ -4,6 +4,8 @@ A web-first TypeScript and PixiJS port of the original FoP Breakout university p
 
 The goal is preservation through modernization: keep the old maps, assets, controls, and game idea, while replacing the native Java/LWJGL runtime with a small browser app.
 
+Play it at https://breakout-modern.vercel.app.
+
 ## Features
 
 - PixiJS renderer with an 800x600 legacy logical playfield
@@ -26,6 +28,10 @@ Useful checks:
 bun run test
 bun run build
 ```
+
+## Deployment
+
+Vercel builds the app with `bun run build` and serves the generated `dist/` output.
 
 ## Compatibility
 
