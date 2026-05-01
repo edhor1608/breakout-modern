@@ -65,8 +65,12 @@ const game = new BreakoutGame({
   }
 });
 
-await game.mount(canvasWrap);
-showMenu();
+void boot();
+
+async function boot(): Promise<void> {
+  await game.mount(canvasWrap);
+  showMenu();
+}
 
 pauseButton.addEventListener("click", () => {
   if (currentScreen === "playing") {

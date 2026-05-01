@@ -111,3 +111,21 @@ Vercel fits the current app because it hosts static frontend builds with minimal
 ### Consequences
 
 The public deployment is available at https://breakout-modern.vercel.app. Vercel created local `.vercel/` project metadata, which must stay out of git.
+
+## ADR 0007: Avoid Top-Level Await For Pixi Boot
+
+### Context
+
+The Vercel deployment rendered the HTML shell but left the game stage black. Local production preview reproduced the same state: no Pixi canvas was appended and the menu never appeared. Static map and image assets were available, so the failure happened before game content loading. PixiJS has an open production-bundling caveat where awaiting `Application.init()` from top-level module evaluation can stall when bundled by Vite.
+
+### Decision
+
+Keep PixiJS `Application.init()` asynchronous, but call it from an explicit `boot()` function instead of using top-level `await` in `src/main.ts`.
+
+### Rationale
+
+This preserves the PixiJS v8 initialization model while avoiding the Vite production stall. It is smaller and clearer than changing renderers, changing asset paths, or adding deployment-specific code.
+
+### Consequences
+
+Production preview and Vercel builds must be checked for canvas creation, not just successful TypeScript compilation. Future entry-point code should not wrap Pixi initialization in top-level await.
