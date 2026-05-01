@@ -292,8 +292,7 @@ export class BreakoutGame {
     }
 
     const normalized = clamp((this.ball.x - paddle.x) / (paddle.width / 2), -1, 1);
-    const maxAngle = 62;
-    const angle = normalized * maxAngle;
+    const angle = normalized * GAME.maxBounceAngle;
     this.setBallAngle(paddle.kind === "bottom" ? angle : 180 - angle);
     this.ball.y = paddle.kind === "bottom" ? paddle.y - paddle.height / 2 - this.ball.radius : paddle.y + paddle.height / 2 + this.ball.radius;
     this.raiseBallSpeed();
@@ -369,9 +368,9 @@ export class BreakoutGame {
     const paddles = [this.bottom, this.top].filter((paddle): paddle is Paddle => Boolean(paddle));
     for (const paddle of paddles) {
       if (kind === "fasterStick") {
-        paddle.speed += 90;
+        paddle.speed = Math.min(GAME.maxStickSpeed, paddle.speed + GAME.fasterStickBoost);
       } else if (kind === "slowerStick") {
-        paddle.speed = Math.max(240, paddle.speed - 70);
+        paddle.speed = Math.max(GAME.minStickSpeed, paddle.speed - GAME.slowerStickPenalty);
       } else if (kind === "biggerStick") {
         this.resizePaddle(paddle, ASSETS.images.stickBigger);
       } else if (kind === "smallerStick") {
@@ -380,10 +379,10 @@ export class BreakoutGame {
     }
 
     if (kind === "fasterBall") {
-      this.ball.speed += 80;
+      this.ball.speed = Math.min(GAME.maxBallSpeed, this.ball.speed + GAME.fasterBallBoost);
       this.normalizeVelocity();
     } else if (kind === "slowerBall") {
-      this.ball.speed = Math.max(220, this.ball.speed - 80);
+      this.ball.speed = Math.max(GAME.minBallSpeed, this.ball.speed - GAME.slowerBallPenalty);
       this.normalizeVelocity();
     }
   }
@@ -429,7 +428,7 @@ export class BreakoutGame {
   }
 
   private raiseBallSpeed(): void {
-    this.ball.speed += GAME.speedupPerHit;
+    this.ball.speed = Math.min(GAME.maxBallSpeed, this.ball.speed + GAME.speedupPerHit);
     this.normalizeVelocity();
   }
 

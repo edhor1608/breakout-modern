@@ -3,16 +3,25 @@ export const GAME = {
   height: 600,
   targetFps: 120,
   lives: 3,
-  initialBallSpeed: 360,
-  speedupPerHit: 10,
-  stickSpeed: 560,
+  initialBallSpeed: 320,
+  minBallSpeed: 260,
+  maxBallSpeed: 680,
+  speedupPerHit: 3,
+  stickSpeed: 540,
+  minStickSpeed: 320,
+  maxStickSpeed: 700,
   stickStartX: 400,
   stickStartY: 565,
   upperStickY: 465,
   ballRadius: 13,
-  itemChance: 0.1,
-  itemChanceStep: 0.05,
-  itemFallSpeed: 210
+  maxBounceAngle: 56,
+  itemChance: 0.08,
+  itemChanceStep: 0.025,
+  itemFallSpeed: 210,
+  fasterStickBoost: 60,
+  slowerStickPenalty: 50,
+  fasterBallBoost: 45,
+  slowerBallPenalty: 45
 } as const;
 
 export const ASSETS = {
