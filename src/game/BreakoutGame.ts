@@ -147,29 +147,52 @@ export class BreakoutGame {
   }
 
   private createPaddle(x: number, y: number, kind: Paddle["kind"]): Paddle {
-    const sprite = new Sprite(this.texture(ASSETS.images.stick));
-    sprite.anchor.set(0.5);
-    sprite.position.set(x, y);
-    const mask = this.createPaddleMask(x, y, sprite.width, sprite.height);
-    sprite.mask = mask;
-    this.world.addChild(sprite);
-    this.world.addChild(mask);
+    const texture = this.texture(ASSETS.images.stick);
+    const visual = this.createPaddleVisual(x, y, texture.width, texture.height);
+    this.world.addChild(visual);
     return {
       x,
       y,
-      width: sprite.width,
-      height: sprite.height,
-      mask,
+      width: texture.width,
+      height: texture.height,
+      visual,
       speed: GAME.stickSpeed,
-      kind,
-      sprite
+      kind
     };
   }
 
-  private createPaddleMask(x: number, y: number, width: number, height: number): Graphics {
-    const mask = new Graphics().roundRect(-width / 2, -height / 2, width, height, height / 2).fill(0xffffff);
-    mask.position.set(x, y);
-    return mask;
+  private createPaddleVisual(x: number, y: number, width: number, height: number): Graphics {
+    const radius = height / 2;
+    const innerHeight = height - 6;
+    const innerRadius = innerHeight / 2;
+    const capCenterOffset = width / 2 - radius;
+    const brickHeight = 6;
+    const brickTop = -brickHeight / 2;
+    const brickWidth = 18;
+    const visual = new Graphics();
+
+    visual
+      .roundRect(-width / 2, -height / 2, width, height, radius)
+      .fill(0x18110b)
+      .stroke({ width: 2, color: 0xf7c22f });
+    visual
+      .roundRect(-width / 2 + 3, -innerHeight / 2, width - 6, innerHeight, innerRadius)
+      .fill(0x6f4118)
+      .stroke({ width: 1, color: 0x2a170c, alpha: 0.75 });
+
+    for (let brickX = -capCenterOffset + 4; brickX < capCenterOffset - brickWidth; brickX += brickWidth) {
+      visual.rect(brickX, brickTop, brickWidth - 2, brickHeight).fill(0x9d6327);
+      visual.rect(brickX, brickTop, brickWidth - 2, brickHeight).stroke({ width: 1, color: 0x311a0a, alpha: 0.6 });
+    }
+
+    visual
+      .circle(-capCenterOffset, 0, radius - 4)
+      .stroke({ width: 1, color: 0xf7c22f, alpha: 0.8 });
+    visual
+      .circle(capCenterOffset, 0, radius - 4)
+      .stroke({ width: 1, color: 0xf7c22f, alpha: 0.8 });
+    visual.position.set(x, y);
+    return visual;
   }
 
   private createBall(): Ball {
@@ -422,15 +445,13 @@ export class BreakoutGame {
   }
 
   private resizePaddle(paddle: Paddle, texturePath: string): void {
-    paddle.sprite.texture = this.texture(texturePath);
-    paddle.width = paddle.sprite.width;
-    paddle.height = paddle.sprite.height;
-    paddle.sprite.mask = null;
-    this.world.removeChild(paddle.mask);
-    paddle.mask.destroy();
-    paddle.mask = this.createPaddleMask(paddle.x, paddle.y, paddle.width, paddle.height);
-    paddle.sprite.mask = paddle.mask;
-    this.world.addChild(paddle.mask);
+    const texture = this.texture(texturePath);
+    paddle.width = texture.width;
+    paddle.height = texture.height;
+    this.world.removeChild(paddle.visual);
+    paddle.visual.destroy();
+    paddle.visual = this.createPaddleVisual(paddle.x, paddle.y, paddle.width, paddle.height);
+    this.world.addChild(paddle.visual);
     paddle.x = clamp(paddle.x, paddle.width / 2 + GAME.sidePadding, GAME.width - paddle.width / 2 - GAME.sidePadding);
   }
 
@@ -481,8 +502,7 @@ export class BreakoutGame {
   private syncSprites(): void {
     for (const paddle of [this.bottom, this.top]) {
       if (paddle) {
-        paddle.sprite.position.set(paddle.x, paddle.y);
-        paddle.mask.position.set(paddle.x, paddle.y);
+        paddle.visual.position.set(paddle.x, paddle.y);
       }
     }
     this.ball.sprite.position.set(this.ball.x, this.ball.y);

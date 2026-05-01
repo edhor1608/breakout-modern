@@ -14,6 +14,12 @@ Block collisions use circle-vs-rectangle intersection. When multiple adjacent bl
 
 Physics is stepped in small substeps and frame deltas are capped. This avoids large frame spikes causing the ball or falling items to tunnel through thin objects.
 
+## Paddle Shape Calculation
+
+The paddle collision is a capsule, not a plain rectangle. For a paddle of `width` and `height`, the cap radius is `height / 2` and the straight center segment runs from `x - (width / 2 - height / 2)` to `x + (width / 2 - height / 2)`. The ball collides when its center is within `ballRadius + height / 2` of that segment.
+
+With the current assets this means the normal paddle is a 130 by 25 capsule with 12.5 pixel end radius and cap centers at `+/-52.5` pixels. The bigger paddle is 193 by 25 with cap centers at `+/-84` pixels, and the smaller paddle is 93 by 25 with cap centers at `+/-34` pixels. The rendered paddle now uses this same capsule outline so the visible stick matches the current physics without changing gameplay.
+
 ## Fixed During Audit
 
 The top wall was previously at y `30`, which conflicted with the legacy top row of blocks spanning y `0` to `30`. The wall is now at y `0`, so top-row blocks are playable instead of only edge-touchable.

@@ -8,8 +8,7 @@ export type Rect = {
 };
 
 export type Paddle = Rect & {
-  sprite: Sprite;
-  mask: Graphics;
+  visual: Graphics;
   speed: number;
   kind: "bottom" | "top";
 };

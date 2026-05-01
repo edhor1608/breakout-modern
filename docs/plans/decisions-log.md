@@ -17,3 +17,21 @@ TypeScript and Vite provide a small, fast, maintainable development workflow wit
 ### Consequences
 
 The project will temporarily contain both legacy Java code and the new web implementation. Some behavior will need to be specified from the legacy code before it is ported, especially collision details, item effects, and highscore sorting. Java serialized highscore files cannot be consumed directly in normal browser storage, so compatibility means preserving the highscore semantics, not necessarily reading `.hsc` files client-side.
+
+## ADR 0002: Render The Paddle As The Collision Capsule
+
+### Context
+
+The modern game uses capsule collision for the paddle. The first visual pass masked the legacy rectangular stick texture into a rounded rectangle, but the detailed brick texture still suggested a flatter rectangular surface than the collision model actually uses. That made the edges harder to read while playing.
+
+### Decision
+
+Keep the current paddle physics unchanged and render the paddle as a PixiJS capsule derived from the same width and height used by collision. The outer shape uses `height / 2` as the radius, matching the capsule calculation in `circleCapsuleCollision`. Decoration stays inside that boundary.
+
+### Rationale
+
+This fixes the player-facing mismatch without changing ball behavior, bounce angles, item effects, or legacy dimensions. The normal, bigger, and smaller paddles still use the old asset dimensions, so item balance and map compatibility stay intact.
+
+### Consequences
+
+The paddle no longer displays the original stick bitmap directly. The original image dimensions remain the source of truth for width and height, but the visible stick is generated with Pixi graphics so it can match the active physics shape exactly.

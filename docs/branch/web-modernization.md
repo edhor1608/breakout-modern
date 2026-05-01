@@ -22,6 +22,8 @@ The original highscore files are Java object serialization and are not directly 
 
 Use TypeScript, Vite, and PixiJS for the modern implementation. Keep the legacy code as a reference during the port. Preserve map and asset compatibility first; replace Java highscore persistence with a browser-native format while documenting import/export limitations.
 
+The paddle visual is generated from the same capsule dimensions used by collision. This keeps the current physics intact while making the stick easier to read during play.
+
 ## Next Steps
 
 Create the Vite/PixiJS app beside the legacy source with the fewest moving parts. Start with pure TypeScript modules for map parsing, score sorting, and game constants so compatibility tests can run before rendering work begins. Then wire PixiJS rendering and input around those tested modules.
