@@ -61,6 +61,7 @@ export class BreakoutGame {
       height: GAME.height,
       background: "#05070b",
       antialias: false,
+      preference: ["webgl"],
       resolution: window.devicePixelRatio || 1,
       autoDensity: true
     });
