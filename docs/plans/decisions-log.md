@@ -20,6 +20,8 @@ The project will temporarily contain both legacy Java code and the new web imple
 
 ## ADR 0002: Render The Paddle As The Collision Capsule
 
+Status: Superseded by ADR 0003.
+
 ### Context
 
 The modern game uses capsule collision for the paddle. The first visual pass masked the legacy rectangular stick texture into a rounded rectangle, but the detailed brick texture still suggested a flatter rectangular surface than the collision model actually uses. That made the edges harder to read while playing.
@@ -35,3 +37,21 @@ This fixes the player-facing mismatch without changing ball behavior, bounce ang
 ### Consequences
 
 The paddle no longer displays the original stick bitmap directly. The original image dimensions remain the source of truth for width and height, but the visible stick is generated with Pixi graphics so it can match the active physics shape exactly.
+
+## ADR 0003: Render The Paddle As A Bounce-Angle Surface
+
+### Context
+
+The paddle contact gate uses a capsule, but the gameplay feel does not behave like a rectangular wall or a simple rounded collider. When the ball hits the paddle, the incoming angle is ignored and horizontal hit position chooses the outgoing angle. The previous visual still made the stick read mostly like a rounded brick.
+
+### Decision
+
+Keep the existing physics unchanged and draw the paddle as a curved deflector surface derived from the bounce-angle formula. The curve uses `dy/dx = tan(outgoingAngle / 2)`, so its local visual slope communicates the left, center, and right outgoing directions.
+
+### Rationale
+
+This matches what players need to understand during play: landing on the left side sends the ball left, landing near the center sends it upward, and landing on the right side sends it right. The old asset dimensions still define normal, bigger, and smaller paddle sizes, preserving item balance.
+
+### Consequences
+
+The paddle visual now represents the control law rather than the contact capsule. This is intentionally player-facing: the collision gate remains unchanged, but the stick shape explains the bounce behavior more honestly.

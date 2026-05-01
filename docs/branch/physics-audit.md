@@ -14,11 +14,13 @@ Block collisions use circle-vs-rectangle intersection. When multiple adjacent bl
 
 Physics is stepped in small substeps and frame deltas are capped. This avoids large frame spikes causing the ball or falling items to tunnel through thin objects.
 
-## Paddle Shape Calculation
+## Paddle Bounce Surface Calculation
 
-The paddle collision is a capsule, not a plain rectangle. For a paddle of `width` and `height`, the cap radius is `height / 2` and the straight center segment runs from `x - (width / 2 - height / 2)` to `x + (width / 2 - height / 2)`. The ball collides when its center is within `ballRadius + height / 2` of that segment.
+The paddle contact check is a capsule, but the player-facing behavior is the bounce-angle function. On paddle hit, the incoming angle is ignored and horizontal hit position maps directly to an outgoing angle from `-maxBounceAngle` to `+maxBounceAngle`.
 
-With the current assets this means the normal paddle is a 130 by 25 capsule with 12.5 pixel end radius and cap centers at `+/-52.5` pixels. The bigger paddle is 193 by 25 with cap centers at `+/-84` pixels, and the smaller paddle is 93 by 25 with cap centers at `+/-34` pixels. The rendered paddle now uses this same capsule outline so the visible stick matches the current physics without changing gameplay.
+The rendered paddle therefore uses a curved deflector surface derived from that angle function. If a vertical incoming ball were reflected by a real curve, the local surface normal would be half the outgoing angle, so `dy/dx = tan(outgoingAngle / 2)`. With `outgoingAngle = maxBounceAngle * x / (width / 2)`, the visual curve is `y = centerTop - (width / maxAngle) * ln(cos(maxAngle * x / width))`.
+
+With the current 56 degree maximum bounce, the normal 130 by 25 paddle drops about 16.56 pixels from center to edge. The bigger 193 by 25 paddle drops about 24.58 pixels, and the smaller 93 by 25 paddle drops about 11.85 pixels. This changes only the visual stick shape; the current bounce logic and contact gate stay unchanged.
 
 ## Fixed During Audit
 
