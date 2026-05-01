@@ -129,3 +129,21 @@ This preserves the PixiJS v8 initialization model while avoiding the Vite produc
 ### Consequences
 
 Production preview and Vercel builds must be checked for canvas creation, not just successful TypeScript compilation. Future entry-point code should not wrap Pixi initialization in top-level await.
+
+## ADR 0008: Add Baseline OSS Project Protections
+
+### Context
+
+The project is now public and deployed. It already had an MIT license, README, CODEOWNERS, and a main-branch ruleset requiring pull requests and code owner review. It was still missing the standard contributor-facing files and automated CI checks expected for a small open source project.
+
+### Decision
+
+Add concise OSS baseline files: contributing guide, security policy, code of conduct, pull request template, bug report template, Dependabot config, and GitHub Actions CI. CI runs type checking, unit tests, production build, and Playwright smoke tests.
+
+### Rationale
+
+These files make project expectations explicit without adding heavy process. CI gives branch rules something objective to enforce before code lands.
+
+### Consequences
+
+Future pull requests should explain verification and compatibility impact. Dependency updates will be proposed automatically. The main branch ruleset should require the `test` status check once the workflow exists on GitHub.
