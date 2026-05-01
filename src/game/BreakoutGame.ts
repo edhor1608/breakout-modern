@@ -2,8 +2,16 @@ import { Application, Assets, Container, Sprite, Text, Texture } from "pixi.js";
 import { ASSETS, GAME, type GameMode } from "../core/constants";
 import { loadLegacyMap, type ParsedMap } from "../core/map";
 import { InputState } from "./input";
+import {
+  clamp,
+  circleRectCollision,
+  deepestCircleRectCollision,
+  normalizeVelocity,
+  rectsOverlap,
+  velocityFromAngle
+} from "./physics";
 import { SoundPlayer } from "./sound";
-import type { Ball, Block, GameResult, Item, ItemKind, Paddle, Rect } from "./types";
+import type { Ball, Block, GameResult, Item, ItemKind, Paddle } from "./types";
 
 type GameCallbacks = {
   onHudChange: (hud: { lives: number; time: number; destroyed: number; total: number }) => void;
@@ -27,7 +35,7 @@ export class BreakoutGame {
   private elapsed = 0;
   private destroyedBlocks = 0;
   private totalBlocks = 0;
-  private itemChance = GAME.itemChance;
+  private itemChance: number = GAME.itemChance;
   private bottom!: Paddle;
   private top?: Paddle;
   private ball!: Ball;
@@ -204,16 +212,29 @@ export class BreakoutGame {
       return;
     }
 
-    this.handleControls(deltaSeconds);
+    const frameSeconds = Math.min(deltaSeconds, GAME.maxFrameSeconds);
+    this.handleControls(frameSeconds);
     if (this.ball.attached) {
       this.attachBall();
+      this.stepPhysics(frameSeconds);
     } else {
-      this.elapsed += deltaSeconds;
-      this.moveBall(deltaSeconds);
+      this.elapsed += frameSeconds;
+      this.stepPhysics(frameSeconds);
     }
-    this.moveItems(deltaSeconds);
     this.syncSprites();
     this.emitHud();
+  }
+
+  private stepPhysics(deltaSeconds: number): void {
+    let remainingSeconds = deltaSeconds;
+    while (remainingSeconds > 0 && !this.finished) {
+      const stepSeconds = Math.min(GAME.physicsStepSeconds, remainingSeconds);
+      if (!this.ball.attached) {
+        this.moveBall(stepSeconds);
+      }
+      this.moveItems(stepSeconds);
+      remainingSeconds -= stepSeconds;
+    }
   }
 
   private handleControls(deltaSeconds: number): void {
@@ -230,11 +251,11 @@ export class BreakoutGame {
   private movePaddle(paddle: Paddle, deltaSeconds: number, leftKey: string, rightKey: string): void {
     const direction = Number(this.input.pressed(rightKey)) - Number(this.input.pressed(leftKey));
     paddle.x += direction * paddle.speed * deltaSeconds;
-    paddle.x = clamp(paddle.x, paddle.width / 2 + 5, GAME.width - paddle.width / 2 - 5);
+    paddle.x = clamp(paddle.x, paddle.width / 2 + GAME.sidePadding, GAME.width - paddle.width / 2 - GAME.sidePadding);
   }
 
   private launchBall(): void {
-    const angle = Math.random() > 0.5 ? 35 : -35;
+    const angle = Math.random() > 0.5 ? GAME.launchAngle : -GAME.launchAngle;
     this.ball.attached = false;
     this.setBallAngle(angle);
   }
@@ -261,8 +282,8 @@ export class BreakoutGame {
       this.sound.play("border");
     }
 
-    if (this.ball.y - this.ball.radius <= 30) {
-      this.ball.y = 30 + this.ball.radius;
+    if (this.ball.y - this.ball.radius <= GAME.topWallY) {
+      this.ball.y = GAME.topWallY + this.ball.radius;
       this.ball.vy = Math.abs(this.ball.vy);
       this.sound.play("border");
     }
@@ -280,7 +301,7 @@ export class BreakoutGame {
   }
 
   private hitPaddle(paddle: Paddle): void {
-    if (!circleRect(this.ball, paddle)) {
+    if (!circleRectCollision(this.ball, paddle)) {
       return;
     }
 
@@ -300,16 +321,19 @@ export class BreakoutGame {
   }
 
   private hitBlocks(): void {
-    const block = this.blocks.find((candidate) => circleRect(this.ball, candidate));
-    if (!block) {
+    const hit = deepestCircleRectCollision(this.ball, this.blocks);
+    if (!hit) {
       return;
     }
 
-    const overlapX = block.width / 2 + this.ball.radius - Math.abs(this.ball.x - block.x);
-    const overlapY = block.height / 2 + this.ball.radius - Math.abs(this.ball.y - block.y);
-    if (overlapX < overlapY) {
+    const { rect: block, collision } = hit;
+    if (collision.axis === "x") {
+      const pushDirection = this.ball.x >= block.x ? 1 : -1;
+      this.ball.x += pushDirection * collision.overlapX;
       this.ball.vx *= -1;
     } else {
+      const pushDirection = this.ball.y >= block.y ? 1 : -1;
+      this.ball.y += pushDirection * collision.overlapY;
       this.ball.vy *= -1;
     }
 
@@ -332,7 +356,7 @@ export class BreakoutGame {
 
   private maybeSpawnItem(x: number, y: number): void {
     if (Math.random() > this.itemChance) {
-      this.itemChance += GAME.itemChanceStep;
+      this.itemChance = Math.min(1, this.itemChance + GAME.itemChanceStep);
       return;
     }
 
@@ -391,7 +415,7 @@ export class BreakoutGame {
     paddle.sprite.texture = this.texture(texturePath);
     paddle.width = paddle.sprite.width;
     paddle.height = paddle.sprite.height;
-    paddle.x = clamp(paddle.x, paddle.width / 2 + 5, GAME.width - paddle.width / 2 - 5);
+    paddle.x = clamp(paddle.x, paddle.width / 2 + GAME.sidePadding, GAME.width - paddle.width / 2 - GAME.sidePadding);
   }
 
   private removeItem(item: Item): void {
@@ -422,9 +446,9 @@ export class BreakoutGame {
   }
 
   private setBallAngle(angleDegrees: number): void {
-    const radians = ((angleDegrees - 90) * Math.PI) / 180;
-    this.ball.vx = Math.cos(radians) * this.ball.speed;
-    this.ball.vy = Math.sin(radians) * this.ball.speed;
+    const velocity = velocityFromAngle(angleDegrees, this.ball.speed);
+    this.ball.vx = velocity.vx;
+    this.ball.vy = velocity.vy;
   }
 
   private raiseBallSpeed(): void {
@@ -433,12 +457,9 @@ export class BreakoutGame {
   }
 
   private normalizeVelocity(): void {
-    const length = Math.hypot(this.ball.vx, this.ball.vy);
-    if (length === 0) {
-      return;
-    }
-    this.ball.vx = (this.ball.vx / length) * this.ball.speed;
-    this.ball.vy = (this.ball.vy / length) * this.ball.speed;
+    const velocity = normalizeVelocity(this.ball, this.ball.speed);
+    this.ball.vx = velocity.vx;
+    this.ball.vy = velocity.vy;
   }
 
   private syncSprites(): void {
@@ -467,21 +488,4 @@ export class BreakoutGame {
   private blockTexture(hits: number): string {
     return ASSETS.images.blocks[Math.min(Math.max(hits, 1), 4) - 1];
   }
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
-
-function circleRect(circle: Pick<Ball, "x" | "y" | "radius">, rect: Rect): boolean {
-  const closestX = clamp(circle.x, rect.x - rect.width / 2, rect.x + rect.width / 2);
-  const closestY = clamp(circle.y, rect.y - rect.height / 2, rect.y + rect.height / 2);
-  return Math.hypot(circle.x - closestX, circle.y - closestY) <= circle.radius;
-}
-
-function rectsOverlap(left: Rect, right: Rect): boolean {
-  return (
-    Math.abs(left.x - right.x) * 2 < left.width + right.width &&
-    Math.abs(left.y - right.y) * 2 < left.height + right.height
-  );
 }
