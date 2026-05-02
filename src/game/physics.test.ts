@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  curveVelocityWithSpin,
-  deflectVelocityWithSpin,
   circlePaddleBounceSurfaceCollision,
   circleRectCollision,
+  curveVelocityWithSpin,
   decaySpin,
   deepestCircleRectCollision,
+  deflectVelocityWithSpin,
   normalizeVelocity,
   paddleBounceSurfaceY,
   paddleHitSpin,
-  velocityFromAngle
+  velocityFromAngle,
 } from "./physics";
 
 describe("physics helpers", () => {
@@ -29,10 +29,7 @@ describe("physics helpers", () => {
   });
 
   it("reports the collision axis for a block hit from below", () => {
-    const collision = circleRectCollision(
-      { x: 25, y: 43, radius: 13 },
-      { x: 25, y: 15, width: 50, height: 30 }
-    );
+    const collision = circleRectCollision({ x: 25, y: 43, radius: 13 }, { x: 25, y: 15, width: 50, height: 30 });
 
     expect(collision?.axis).toBe("y");
   });
@@ -40,7 +37,7 @@ describe("physics helpers", () => {
   it("chooses the deepest block collision instead of the first matching block", () => {
     const hit = deepestCircleRectCollision({ x: 49, y: 30, radius: 13 }, [
       { x: 75, y: 15, width: 50, height: 30 },
-      { x: 25, y: 15, width: 50, height: 30 }
+      { x: 25, y: 15, width: 50, height: 30 },
     ]);
 
     expect(hit?.rect.x).toBe(25);
@@ -68,7 +65,7 @@ describe("physics helpers", () => {
     const spin = paddleHitSpin(-700, 700, 0, {
       maxSpin: 18,
       paddleSpinTransfer: 12,
-      edgeSpinTransfer: 5
+      edgeSpinTransfer: 5,
     });
 
     expect(spin).toBe(12);
@@ -78,7 +75,7 @@ describe("physics helpers", () => {
     const spin = paddleHitSpin(700, 700, 0, {
       maxSpin: 18,
       paddleSpinTransfer: 12,
-      edgeSpinTransfer: 5
+      edgeSpinTransfer: 5,
     });
 
     expect(spin).toBe(-12);

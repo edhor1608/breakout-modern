@@ -14,6 +14,7 @@ bun run dev
 Before opening a pull request, run:
 
 ```sh
+bun run lint
 bun run check
 bun run test
 bun run build

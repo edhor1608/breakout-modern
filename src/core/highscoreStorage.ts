@@ -19,8 +19,8 @@ export function readHighscores(): HighscoreEntry[] {
         name: entry.name,
         destroyedBlocks: entry.destroyedBlocks,
         elapsedSeconds: entry.elapsedSeconds,
-        createdAt: entry.createdAt
-      }))
+        createdAt: entry.createdAt,
+      })),
     );
   } catch {
     return [];

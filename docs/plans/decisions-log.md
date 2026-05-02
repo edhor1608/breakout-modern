@@ -147,3 +147,21 @@ These files make project expectations explicit without adding heavy process. CI 
 ### Consequences
 
 Future pull requests should explain verification and compatibility impact. Dependency updates will be proposed automatically. The main branch ruleset should require the `test` status check once the workflow exists on GitHub.
+
+## ADR 0009: Use Biome For Formatting And Linting
+
+### Context
+
+The project had TypeScript checks, tests, and a build, but no formatter or linter. That left style and simple static quality issues to reviewer preference.
+
+### Decision
+
+Use Biome as the formatter and linter. Pin `@biomejs/biome` to an exact version, expose `lint`, `format`, and `format:check` package scripts, and run `bun run lint` in CI before type checks and tests.
+
+### Rationale
+
+Biome gives this small TypeScript/Vite project one fast tool for formatting, import organization, and recommended lint rules. Pinning the version keeps formatting stable across machines and CI.
+
+### Consequences
+
+Pull requests must pass Biome checks. The formatter is allowed to make mechanical style changes. The `noImportantStyles` rule is disabled because the Pixi canvas wrapper intentionally uses `!important` to override renderer-written canvas dimensions.

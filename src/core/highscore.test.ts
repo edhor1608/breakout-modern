@@ -6,7 +6,7 @@ describe("highscores", () => {
     const sorted = sortHighscores([
       createHighscoreEntry("slow", 10, 50),
       createHighscoreEntry("less", 8, 1),
-      createHighscoreEntry("fast", 10, 20)
+      createHighscoreEntry("fast", 10, 20),
     ]);
 
     expect(sorted.map((entry) => entry.name)).toEqual(["FAST", "SLOW", "LESS"]);

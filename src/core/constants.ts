@@ -33,7 +33,7 @@ export const GAME = {
   fasterStickBoost: 60,
   slowerStickPenalty: 50,
   fasterBallBoost: 45,
-  slowerBallPenalty: 45
+  slowerBallPenalty: 45,
 } as const;
 
 export const ASSETS = {
@@ -58,8 +58,8 @@ export const ASSETS = {
       biggerStick: "/images/bigger.png",
       smallerStick: "/images/smaller.png",
       fasterBall: "/images/fasterball.png",
-      slowerBall: "/images/slowerball.png"
-    }
+      slowerBall: "/images/slowerball.png",
+    },
   },
   sounds: {
     background: "/sounds/backgroundMusic.wav",
@@ -70,8 +70,8 @@ export const ASSETS = {
     gameOver: "/sounds/game-over-yeah.wav",
     win: "/sounds/winSound.wav",
     click: "/sounds/click.wav",
-    lostLife: "/sounds/evil-laugh.wav"
-  }
+    lostLife: "/sounds/evil-laugh.wav",
+  },
 } as const;
 
 export const MAPS = [
@@ -80,7 +80,7 @@ export const MAPS = [
   "levelBlockTest5.map",
   "levelEmpty.map",
   "levelTest2.map",
-  "levelTestBlock.map"
+  "levelTestBlock.map",
 ] as const;
 
 export type GameMode = "single" | "multi";

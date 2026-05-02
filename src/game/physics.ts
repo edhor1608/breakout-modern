@@ -43,7 +43,7 @@ export function velocityFromAngle(angleDegrees: number, speed: number): Velocity
   const radians = ((angleDegrees - 90) * Math.PI) / 180;
   return {
     vx: Math.cos(radians) * speed,
-    vy: Math.sin(radians) * speed
+    vy: Math.sin(radians) * speed,
   };
 }
 
@@ -55,7 +55,7 @@ export function normalizeVelocity(velocity: Velocity, speed: number): Velocity {
 
   return {
     vx: (velocity.vx / length) * speed,
-    vy: (velocity.vy / length) * speed
+    vy: (velocity.vy / length) * speed,
   };
 }
 
@@ -64,7 +64,7 @@ export function rotateVelocity(velocity: Velocity, radians: number): Velocity {
   const sin = Math.sin(radians);
   return {
     vx: velocity.vx * cos - velocity.vy * sin,
-    vy: velocity.vx * sin + velocity.vy * cos
+    vy: velocity.vx * sin + velocity.vy * cos,
   };
 }
 
@@ -73,7 +73,7 @@ export function curveVelocityWithSpin(
   angularVelocity: number,
   deltaSeconds: number,
   strength: number,
-  speed: number
+  speed: number,
 ): Velocity {
   return normalizeVelocity(rotateVelocity(velocity, angularVelocity * strength * deltaSeconds), speed);
 }
@@ -82,7 +82,7 @@ export function deflectVelocityWithSpin(
   velocity: Velocity,
   angularVelocity: number,
   strength: number,
-  speed: number
+  speed: number,
 ): Velocity {
   return normalizeVelocity(rotateVelocity(velocity, angularVelocity * strength), speed);
 }
@@ -95,7 +95,7 @@ export function paddleHitSpin(
   paddleVelocityX: number,
   maxPaddleVelocityX: number,
   hitNormalized: number,
-  settings: SpinSettings
+  settings: SpinSettings,
 ): number {
   const movementSpin = -clamp(paddleVelocityX / maxPaddleVelocityX, -1, 1) * settings.paddleSpinTransfer;
   const edgeSpin = hitNormalized * settings.edgeSpinTransfer;
@@ -114,7 +114,7 @@ export function circleRectCollision(circle: Circle, rect: Rect): CircleRectColli
   return {
     axis: overlapX < overlapY ? "x" : "y",
     overlapX,
-    overlapY
+    overlapY,
   };
 }
 
@@ -127,7 +127,7 @@ export function createPaddleBounceSurface(
   width: number,
   height: number,
   maxAngleDegrees: number,
-  segments = 24
+  segments = 24,
 ): SurfacePoint[] {
   return Array.from({ length: segments + 1 }, (_, index) => {
     const x = -width / 2 + (width * index) / segments;
@@ -139,14 +139,14 @@ export function circlePaddleBounceSurfaceCollision(
   circle: Circle,
   paddle: Rect,
   kind: PaddleKind,
-  maxAngleDegrees: number
+  maxAngleDegrees: number,
 ): PaddleSurfaceCollision | undefined {
   const localCircle = {
     x: circle.x - paddle.x,
-    y: kind === "bottom" ? circle.y - paddle.y : paddle.y - circle.y
+    y: kind === "bottom" ? circle.y - paddle.y : paddle.y - circle.y,
   };
   const surface = createPaddleBounceSurface(paddle.width, paddle.height, maxAngleDegrees);
-  let closest: PaddleSurfaceCollision & { distance: number } | undefined;
+  let closest: (PaddleSurfaceCollision & { distance: number }) | undefined;
 
   for (let index = 1; index < surface.length; index += 1) {
     const start = surface[index - 1];
@@ -157,7 +157,7 @@ export function circlePaddleBounceSurfaceCollision(
     const t = clamp(
       ((localCircle.x - start.x) * segmentX + (localCircle.y - start.y) * segmentY) / segmentLengthSquared,
       0,
-      1
+      1,
     );
     const x = start.x + segmentX * t;
     const y = start.y + segmentY * t;
@@ -173,7 +173,7 @@ export function circlePaddleBounceSurfaceCollision(
 
 export function deepestCircleRectCollision<T extends Rect>(
   circle: Circle,
-  rects: T[]
+  rects: T[],
 ): { rect: T; collision: CircleRectCollision } | undefined {
   let deepest: { rect: T; collision: CircleRectCollision; depth: number } | undefined;
 

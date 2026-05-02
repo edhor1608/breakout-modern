@@ -1,7 +1,7 @@
 import "./styles.css";
-import { MAPS, type GameMode, type Screen } from "./core/constants";
-import { addHighscore, readHighscores, resetHighscores } from "./core/highscoreStorage";
+import { type GameMode, MAPS, type Screen } from "./core/constants";
 import { createHighscoreEntry } from "./core/highscore";
+import { addHighscore, readHighscores, resetHighscores } from "./core/highscoreStorage";
 import { BreakoutGame } from "./game/BreakoutGame";
 import type { GameResult } from "./game/types";
 
@@ -62,7 +62,7 @@ const game = new BreakoutGame({
   onResult: (result) => {
     pendingResult = result;
     showResult(result);
-  }
+  },
 });
 
 void boot();
@@ -248,7 +248,7 @@ function showHighscores(): void {
             ? scores
                 .map(
                   (score) =>
-                    `<li><span>${score.name}</span><span>${score.destroyedBlocks} blocks</span><span>${score.elapsedSeconds}s</span></li>`
+                    `<li><span>${score.name}</span><span>${score.destroyedBlocks} blocks</span><span>${score.elapsedSeconds}s</span></li>`,
                 )
                 .join("")
             : `<li><span>No scores yet</span><span>-</span><span>-</span></li>`

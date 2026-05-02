@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseLegacyMap } from "./map";
 
 const legacyMap = Array.from({ length: 10 }, (_, row) =>
-  Array.from({ length: 16 }, (_, column) => (row === 0 && column === 0 ? 4 : 0)).join(",")
+  Array.from({ length: 16 }, (_, column) => (row === 0 && column === 0 ? 4 : 0)).join(","),
 ).join("\n");
 
 describe("parseLegacyMap", () => {
@@ -18,8 +18,8 @@ describe("parseLegacyMap", () => {
         column: 0,
         hits: 4,
         x: 25,
-        y: 15
-      }
+        y: 15,
+      },
     ]);
   });
 

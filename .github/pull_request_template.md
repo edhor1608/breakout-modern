@@ -5,6 +5,7 @@ What changed and why?
 ## Verification
 
 - [ ] `bun run check`
+- [ ] `bun run lint`
 - [ ] `bun run test`
 - [ ] `bun run build`
 

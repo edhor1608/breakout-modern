@@ -53,10 +53,10 @@ export function parseLegacyMap(source: string): ParsedMap {
           column: columnIndex,
           hits,
           x: 25 + 50 * columnIndex,
-          y: 15 + 30 * rowIndex
-        }
+          y: 15 + 30 * rowIndex,
+        },
       ];
-    })
+    }),
   );
 
   return { rows, blocks };

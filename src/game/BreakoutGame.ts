@@ -1,20 +1,20 @@
-import { Application, Assets, Container, Graphics, Sprite, Text, Texture } from "pixi.js";
+import { Application, Assets, Container, Graphics, Sprite, Text, type Texture } from "pixi.js";
 import { ASSETS, GAME, type GameMode } from "../core/constants";
 import { loadLegacyMap, type ParsedMap } from "../core/map";
 import { InputState } from "./input";
 import {
-  clamp,
   circlePaddleBounceSurfaceCollision,
+  clamp,
   createPaddleBounceSurface,
   curveVelocityWithSpin,
   decaySpin,
-  deflectVelocityWithSpin,
   deepestCircleRectCollision,
+  deflectVelocityWithSpin,
   normalizeVelocity,
   paddleBounceSurfaceY,
   paddleHitSpin,
   rectsOverlap,
-  velocityFromAngle
+  velocityFromAngle,
 } from "./physics";
 import { SoundPlayer } from "./sound";
 import type { Ball, Block, GameResult, Item, ItemKind, Paddle } from "./types";
@@ -63,7 +63,7 @@ export class BreakoutGame {
       antialias: false,
       preference: ["webgl"],
       resolution: window.devicePixelRatio || 1,
-      autoDensity: true
+      autoDensity: true,
     });
 
     this.app.canvas.className = "game-canvas";
@@ -119,13 +119,13 @@ export class BreakoutGame {
       ASSETS.images.heart,
       ASSETS.images.bar,
       ...ASSETS.images.blocks,
-      ...Object.values(ASSETS.images.items)
+      ...Object.values(ASSETS.images.items),
     ];
 
     await Promise.all(
       paths.map(async (path) => {
         this.textures.set(path, await Assets.load<Texture>(path));
-      })
+      }),
     );
   }
 
@@ -174,7 +174,7 @@ export class BreakoutGame {
       visual,
       speed: GAME.stickSpeed,
       velocityX: 0,
-      kind
+      kind,
     };
   }
 
@@ -187,7 +187,11 @@ export class BreakoutGame {
     for (const point of surface) {
       visual.lineTo(point.x, point.y);
     }
-    visual.lineTo(width / 2, bottomY).closePath().fill(0x5f3515).stroke({ width: 2, color: 0xf7c22f });
+    visual
+      .lineTo(width / 2, bottomY)
+      .closePath()
+      .fill(0x5f3515)
+      .stroke({ width: 2, color: 0xf7c22f });
 
     visual.moveTo(surface[0].x, surface[0].y);
     for (const point of surface.slice(1)) {
@@ -221,7 +225,7 @@ export class BreakoutGame {
       speed: GAME.initialBallSpeed,
       angularVelocity: 0,
       sprite,
-      attached: true
+      attached: true,
     };
   }
 
@@ -239,8 +243,8 @@ export class BreakoutGame {
       style: {
         fontFamily: "Fixedsys, monospace",
         fontSize: 18,
-        fill: "#f8f6e7"
-      }
+        fill: "#f8f6e7",
+      },
     });
     this.hudText.position.set(10, 2);
     this.uiLayer.addChild(this.hudText);
@@ -372,7 +376,9 @@ export class BreakoutGame {
     this.setBallAngle(paddle.kind === "bottom" ? angle : 180 - angle);
     this.applyPaddleSpin(paddle, hit.normalized);
     this.ball.y =
-      paddle.kind === "bottom" ? paddle.y + hit.surfaceY - this.ball.radius : paddle.y - hit.surfaceY + this.ball.radius;
+      paddle.kind === "bottom"
+        ? paddle.y + hit.surfaceY - this.ball.radius
+        : paddle.y - hit.surfaceY + this.ball.radius;
     this.raiseBallSpeed();
     this.sound.play("stick");
   }
@@ -503,7 +509,7 @@ export class BreakoutGame {
     this.callbacks.onResult({
       outcome,
       destroyedBlocks: this.destroyedBlocks,
-      elapsedSeconds: Math.round(this.elapsed)
+      elapsedSeconds: Math.round(this.elapsed),
     });
   }
 
@@ -542,7 +548,7 @@ export class BreakoutGame {
       this.ball.angularVelocity,
       deltaSeconds,
       GAME.spinFlightCurve,
-      this.ball.speed
+      this.ball.speed,
     );
     this.ball.vx = velocity.vx;
     this.ball.vy = velocity.vy;
@@ -559,7 +565,7 @@ export class BreakoutGame {
       this.ball,
       this.ball.angularVelocity,
       GAME.spinBounceDeflection,
-      this.ball.speed
+      this.ball.speed,
     );
     this.ball.vx = velocity.vx;
     this.ball.vy = velocity.vy;
@@ -583,7 +589,7 @@ export class BreakoutGame {
       lives: this.lives,
       time: Math.round(this.elapsed),
       destroyed: this.destroyedBlocks,
-      total: this.totalBlocks
+      total: this.totalBlocks,
     };
     this.hudText.text = `Time: ${hud.time}s`;
     this.callbacks.onHudChange(hud);

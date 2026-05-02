@@ -34,6 +34,6 @@ export function createHighscoreEntry(name: string, destroyedBlocks: number, elap
     name: normalizePlayerName(name),
     destroyedBlocks,
     elapsedSeconds,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 }
